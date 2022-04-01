@@ -22,7 +22,7 @@ underscore_num_set = 15 #Number of underscores that should be in each filename s
 
 def ppm_diff(observed, theoretical):
 	"""Take two numbers as arguments, return PPM difference."""
-	return abs(theoretical - observed) / theoretical * 1000000
+	return (theoretical - observed) / theoretical * 1000000
 
 
 def closest(scn, t):
@@ -84,30 +84,38 @@ def get_compound_data(file, polarity, mz_t, ppm_tolerance, include_ms2_data: boo
 def make_figure(df, y: str, include_samples: bool):
 	title = df.at[0, 'Compound Name']
 
-	istd_df = df.loc[df['File Category'].isin(['ISTD'])]
-	fig = plt.figure()
+	istd_df_pos = df.loc[df['File Category'].isin(['ISTD']) & df['Polarity'].isin(['POS'])]
+	istd_df_neg = df.loc[df['File Category'].isin(['ISTD']) & df['Polarity'].isin(['NEG'])]
+	fig, axs = plt.subplots(2, sharex=True)
 
 	if include_samples:
-		sample_df = df.loc[df['File Category'].isin(['S1'])]
+		sample_df_pos = df.loc[df['File Category'].isin(['S1']) & df['Polarity'].isin(['POS'])]
+		sample_df_neg = df.loc[df['File Category'].isin(['S1']) & df['Polarity'].isin(['NEG'])]
 
-		plt.scatter(sample_df['Run Number'], sample_df[y], color='orange', label='Sample Inj.')
-		plt.scatter(istd_df['Run Number'], istd_df[y], color='blue', label='ISTD Inj.')
-
-	else:
-		plt.scatter(istd_df['Run Number'], istd_df[y], color='blue', label='ISTD Inj.')
-
-	if y == 'PPM Error':
-		plt.ylim([0, 10])
+		axs[0].scatter(sample_df_pos['Run Number'], sample_df_pos[y], color='orange', label='Sample Inj.')
+		axs[0].scatter(istd_df_pos['Run Number'], istd_df_pos[y], color='blue', label='ISTD Inj.')
+		
+		axs[1].scatter(sample_df_neg['Run Number'], sample_df_neg[y], color='orange', label='Sample Inj.')
+		axs[1].scatter(istd_df_neg['Run Number'], istd_df_neg[y], color='blue', label='ISTD Inj.')
 
 	else:
-		plt.margins(y=2)
+		axs[0].scatter(istd_df_pos['Run Number'], istd_df_pos[y], color='blue', label='ISTD Inj.')
+		axs[1].scatter(istd_df_neg['Run Number'], istd_df_neg[y], color='blue', label='ISTD Inj.')
 
-	y_mean = [np.mean(istd_df[y]) for i in istd_df[y]]
-	plt.plot(istd_df['Run Number'], y_mean, color='red', linestyle='--', label='ISTD Inj Mean')
-	plt.ylabel(y)
-	plt.xlabel('Run Number')
-	plt.legend(loc="upper left")
-	plt.title(title)
+	axs[0].margins(y=2)
+	axs[1].margins(y=2)
+	axs[0].set_title('POS')
+	axs[1].set_title('NEG')
+
+	y_mean_pos = [np.mean(istd_df_pos[y]) for i in istd_df_pos[y]]
+	y_mean_neg = [np.mean(istd_df_neg[y]) for i in istd_df_neg[y]]
+	axs[0].plot(istd_df_pos['Run Number'], y_mean_pos, color='red', linestyle='--', label='ISTD Inj Mean')
+	axs[1].plot(istd_df_neg['Run Number'], y_mean_neg, color='red', linestyle='--', label='ISTD Inj Mean')
+	fig.text(0.06, 0.5, y, ha='center', va='center', rotation='vertical')
+	axs[1].set(xlabel='Run Number')
+	axs[0].legend(loc="upper right", prop={'size': 6})
+	axs[1].legend(loc="upper right", prop={'size': 6})
+	fig.suptitle(title)
 
 	return fig
 

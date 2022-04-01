@@ -3,10 +3,12 @@ import os
 import sys
 import pandas as pd
 
-f_params = {'Name' : 'Phenylalanine', 'Positive M/Z' : 176.1135, 'Negative M/Z' : 174.0989, 'Ideal RT' : 9.00, 'Ideal Intensity' : 5000000} #13C-Phe parameters, pos and neg theoretical m/z, ideal RT, and intensity threshold. subject to change
+phe_params = {'Name' : '13C,15N-Phenylalanine', 'Positive M/Z' : 176.1135, 'Negative M/Z' : 174.0989, 'Ideal RT' : 9.00, 'Ideal Intensity' : 5000000} 
 ab_params = {'Name' : 'ABMBA', 'Positive M/Z' : 229.9811, 'Negative M/Z' : 227.9665, 'Ideal RT' : 5.00, 'Ideal Intensity' : 5000000}
+trp_params = {'Name' : '13C,15N-Tryptophan', 'Positive M/Z' : 218.1281, 'Negative M/Z' : 216.1136, 'Ideal RT' : 10.00, 'Ideal Intensity' : 5000000}
+cyt_params = {'Name' : '13C2,15N3-Cytosine', 'Positive M/Z' : 117.0484, 'Negative M/Z' : 115.0338, 'Ideal RT' : 5.00, 'Ideal Intensity' : 5000000}
 
-compounds = {f_params['Name'] : f_params, ab_params['Name'] : ab_params}
+compounds = {phe_params['Name'] : phe_params, ab_params['Name'] : ab_params, trp_params['Name'] : trp_params, cyt_params['Name'] : cyt_params}
 
 print('-------------------------------------------------------------------------------------')
 print('Please provide the path to the directory where the experiment .raw files are stored.')
