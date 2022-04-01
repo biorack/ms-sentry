@@ -66,6 +66,7 @@ def get_compound_data(file, polarity, mz_t, ppm_tolerance, include_ms2_data: boo
 	ppmdif = ppm_diff(mz_o, mz_t)
 
 	ms1_data = (polarity, mz_o, ppmdif, real_rt, max_i)
+	ms2_data = ('NA')
 
 	if include_ms2_data:
 		rt_ms2, i_ms2 = get_chromatogram_from_mass(file, mz_t, ppm_tolerance, 'ms2')
@@ -74,11 +75,7 @@ def get_compound_data(file, polarity, mz_t, ppm_tolerance, include_ms2_data: boo
 
 		ms2_data = max_i_precursor
 
-		return ms1_data, ms2_data
-
-	else:
-
-		return ms1_data
+	return ms1_data, ms2_data
 
 
 def make_figure(df, y: str, include_samples: bool):
@@ -158,6 +155,10 @@ class RawDataset(object):
 	@staticmethod
 	def _get_file_polarity(name):
 		return name.split('_')[9]
+	
+	@staticmethod
+	def _get_file_msnumber(name):
+		return name.split('_')[10]
 
 	@staticmethod
 	def _get_file_category(name):
@@ -262,22 +263,29 @@ class RawDataset(object):
 				file_name = os.path.basename(f)
 				file_polarity = self._get_file_polarity(file_name)
 				file_category = self._get_file_category(file_name)
+				file_msnumber = self._get_file_msnumber(file_name)
 				run_num = self._get_file_run_number(file_name)
-
+				include_ms2 = False
+				
+				if file_msnumber == 'MSMS':
+					include_ms2 = True
+					
 				if file_polarity == 'FPS':
-					pos_data = get_compound_data(file, 'POS', mz_t_pos, ppm_tolerance, False)
-					neg_data = get_compound_data(file, 'NEG', mz_t_neg, ppm_tolerance, False)
+					pos_data_ms1, pos_data_ms2 = get_compound_data(file, 'POS', mz_t_pos, ppm_tolerance, include_ms2)
+					neg_data_ms1, neg_data_ms2 = get_compound_data(file, 'NEG', mz_t_neg, ppm_tolerance, include_ms2)
 
-					pos, pos_mz_o, pos_ppmdif, pos_real_rt, pos_max_ms1_i = pos_data
-					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data
+					pos, pos_mz_o, pos_ppmdif, pos_real_rt, pos_max_ms1_i = pos_data_ms1
+					pos_max_precursor_i = pos_data_ms2
+					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
+					neg_max_precursor_i = neg_data_ms2
 
 					istd_data_update(run_num, file_name, file_category, c, pos, pos_mz_o, pos_ppmdif, pos_real_rt, 
-									pos_max_ms1_i, 'NA')
+									pos_max_ms1_i, pos_max_precursor_i)
 					istd_data_update(run_num, file_name, file_category, c, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
-									neg_max_ms1_i, 'NA')
+									neg_max_ms1_i, neg_max_precursor_i)
 
 				if file_polarity == 'POS':
-					pos_data_ms1, pos_data_ms2 = get_compound_data(file, 'POS', mz_t_pos, ppm_tolerance, True)
+					pos_data_ms1, pos_data_ms2 = get_compound_data(file, 'POS', mz_t_pos, ppm_tolerance, include_ms2)
 
 					pos, pos_mz_o, pos_ppmdif, pos_real_rt, pos_max_ms1_i = pos_data_ms1
 					pos_max_precursor_i = pos_data_ms2
