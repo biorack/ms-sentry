@@ -17,6 +17,7 @@ import pandas as pd
 import openpyxl
 
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
+filename_categories_vocab = ['ISTD', 'QC', 'MeOH'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
 
 
@@ -164,15 +165,22 @@ class RawDataset():
 
 	@staticmethod
 	def _get_file_category(name):
-		return name.split('_')[14].split('-')[-1]
+		file_category_str = 'S1'
+		file_category_field = name.split('_')[12]
+		file_category_ele = [ele for ele in filename_categories_vocab if (ele in file_category_field)]
+		
+		if file_category_ele != []:
+			file_category_str = file_category_str.join(file_category_ele)
+		
+		return file_category_str
 
 	@staticmethod
 	def _get_file_run_number(name):
 		run_num_str = name.split('_')[15]
 		if not run_num_str.isnumeric():
-			run_num = int(re.sub('\\D', '', run_num_str))
+			run_num = int(re.sub('\\D', '', run_num_str)) #for JGI naming scheme (ex. Run4)
 		else:
-			run_num = int(run_num_str)
+			run_num = int(run_num_str) #for EGSB naming scheme (ex. '100')
 
 		return run_num
 
