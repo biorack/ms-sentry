@@ -51,7 +51,7 @@ name_conformation_report = exp1.check_file_names()
 file_centroid_report = exp1.check_centroid()
 
 for name, result in name_conformation_report.items():
-	if result != True:
+	if result != "":
 		print('Non-conforming filenames have been detected')
 		print('Reason(s): ' + str(result))
 		summary_result_filenames = False

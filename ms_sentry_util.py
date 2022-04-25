@@ -127,13 +127,7 @@ def get_file_age(path):
 	return mins_old
 
 
-class RawDataset(object):
-
-	def __init__(self, file_paths, file_names, file_data, file_dfs):
-		self.file_paths = file_paths
-		self.file_names = file_names
-		self.file_data = file_data
-		self.file_dfs = file_dfs
+class RawDataset():
 
 	def set_file_paths(self, path, files_num = 0):
 		"""
@@ -175,7 +169,10 @@ class RawDataset(object):
 	@staticmethod
 	def _get_file_run_number(name):
 		run_num_str = name.split('_')[15]
-		run_num = int(re.sub('\\D', '', run_num_str))
+		if not run_num_str.isnumeric():
+			run_num = int(re.sub('\\D', '', run_num_str))
+		else:
+			run_num = int(run_num_str)
 
 		return run_num
 
@@ -277,7 +274,7 @@ class RawDataset(object):
 				run_num = self._get_file_run_number(file_name)
 				include_ms2 = False
 				
-				if file_msnumber == 'MSMS':
+				if "MSMS" in file_msnumber:
 					include_ms2 = True
 					
 				if file_polarity == 'FPS':
@@ -304,7 +301,7 @@ class RawDataset(object):
 									pos_max_ms1_i, pos_max_precursor_i)
 
 				if file_polarity == 'NEG':
-					neg_data_ms1, neg_data_ms2 = get_compound_data(file, 'NEG', mz_t_neg, ppm_tolerance, True)
+					neg_data_ms1, neg_data_ms2 = get_compound_data(file, 'NEG', mz_t_neg, ppm_tolerance, include_ms2)
 
 					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
 					neg_max_precursor_i = neg_data_ms2
