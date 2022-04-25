@@ -129,7 +129,7 @@ def get_file_age(path):
 
 class RawDataset(object):
 
-	def __Init__(self, file_paths, file_names, file_data, file_dfs):
+	def __init__(self, file_paths, file_names, file_data, file_dfs):
 		self.file_paths = file_paths
 		self.file_names = file_names
 		self.file_data = file_data
@@ -214,26 +214,28 @@ class RawDataset(object):
 		report = {}
 		for name in self.file_names:
 			
+			underscore_res = True
+			polarity_res = True
+			
 			failure_report = []
 			underscore_num = name.count('_')
 			polarity = self._get_file_polarity(name)
 
 			if underscore_num != underscore_num_set:
-				res = False
+				underscore_res = False
 				underscore_fail = 'Incorrect Number of Underscores'
 				failure_report.append(underscore_fail) 
-
+				
 			if not [True for ele in polarities if (ele in polarity)]:
-				res = False
+				polarity_res = False
 				polarity_fail = 'Polarity Descriptor Invalid'
 				failure_report.append(polarity_fail)
-			else:
-				res = True
 				
-			if res == False:
+				
+			if underscore_res == False or polarity_res == False:
 				report[name] = failure_report
 			else:
-				report[name] = res
+				report[name] = ""
 				
 		return report
 
