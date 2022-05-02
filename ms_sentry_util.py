@@ -165,14 +165,16 @@ class RawDataset():
 
 	@staticmethod
 	def _get_file_category(name):
-		file_category_str = 'S1'
-		file_category_field = name.split('_')[12]
-		file_category_ele = [ele for ele in filename_categories_vocab if (ele in file_category_field)]
+		"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, MeOH) as string"""
+		filename_category_str = 'S1'
+		filename_category_fields_split = name.split('_')[12], name.split('_')[14] #Checks the sample group field (13) and the optional group field
+		filename_category_fields_join = '-'.join(filename_category_fields_split)
+		filename_category_ele = [ele for ele in filename_categories_vocab if (ele in filename_category_fields_join)]
 		
-		if file_category_ele != []:
-			file_category_str = file_category_str.join(file_category_ele)
+		if filename_category_ele != []:
+			filename_category_str = filename_category_str.join(filename_category_ele)
 		
-		return file_category_str
+		return filename_category_str
 
 	@staticmethod
 	def _get_file_run_number(name):
