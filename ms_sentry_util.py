@@ -100,8 +100,8 @@ def make_figure(df, y: str, include_samples: bool):
 		axs[0].scatter(istd_df_pos['Run Number'], istd_df_pos[y], color='blue', label='ISTD Inj.')
 		axs[1].scatter(istd_df_neg['Run Number'], istd_df_neg[y], color='blue', label='ISTD Inj.')
 
-	axs[0].margins(y=2)
-	axs[1].margins(y=2)
+	axs[0].margins(y=1)
+	axs[1].margins(y=1)
 	axs[0].set_title('POS')
 	axs[1].set_title('NEG')
 
