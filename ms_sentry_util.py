@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from fisher_py_mod import Raw
+from fisher_py import RawFile
+from fisher_py_mod import assign_close_method
 
 from fisher_py.data.business import TraceType
 from fisher_py.data import ToleranceUnits, Device
@@ -19,7 +20,6 @@ import openpyxl
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
 filename_categories_vocab = ['ISTD', 'QC', 'MeOH'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
-
 
 def ppm_diff(observed, theoretical):
 	"""Take two numbers as arguments, return PPM difference."""
@@ -245,7 +245,9 @@ class RawDataset():
 		return report
 
 	def get_data(self, compounds, ppm_tolerance=10):
-
+		
+		assign_close_method() #function that assigns a 'close' method to fisher-py's native RawFile class so .raw files can be closed after analysis
+		
 		def istd_data_update(run_num, file_name, file_category, compound_name, polarity,
 							mz_observed, ppm, retention_time, ms1_intensity, ms2_precursor_intensity):
 
@@ -274,7 +276,7 @@ class RawDataset():
 			ppms, rts, ims1s, precursor_ims2s) = [], [], [], [], [], [], [], [], [], []
 
 			for f in self.file_paths:
-				file = Raw(f)
+				file = RawFile(f)
 				file_name = os.path.basename(f)
 				file_polarity = self._get_file_polarity(file_name)
 				file_category = self._get_file_category(file_name)
@@ -328,7 +330,7 @@ class RawDataset():
 				istd_data['MS1 Intensity'] = ims1s
 				istd_data['MS2 Precursor Intensity'] = precursor_ims2s
 
-				file.close()
+				file.close_raw_file()
 				del file
 
 			self.file_data[c] = istd_data
