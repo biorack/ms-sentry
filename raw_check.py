@@ -137,8 +137,7 @@ exp1.make_dfs_from_data()
 
 print('Exporting plots and tables')
 exp1.make_qc_plots(expdir)
-exp1.export_dfs('CSV', expdir)
-exp1.export_dfs('XLSX', expdir)
+exp1.export_dfs(expdir)
 
 print('-------------------------------------------------------------------------------------')
 print('Done!')

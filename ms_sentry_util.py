@@ -19,6 +19,7 @@ import openpyxl
 
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
 filename_categories_vocab = ['ISTD', 'QC', 'MeOH'] #Words that will be searched for in filename to determine file category
+blank = filename_categories_vocab[2]
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
 
 def ppm_diff(observed, theoretical):
@@ -369,23 +370,21 @@ class RawDataset():
 
 		pdf.close()
 
-	def export_dfs(self, extension: str, path):
+	def export_dfs(self,export_csv=False, path):
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
 
 		output_dir = (path + '\\qc_output')
 
-		if extension == 'CSV':
+		if export_csv:
 
 			for compound in self.file_dfs:
 				self.file_dfs[compound].to_csv(output_dir + '/' + compound + '.csv', index=False)
 
-		if extension == 'XLSX':
+		writer = pd.ExcelWriter(output_dir + '/ISTDS.xlsx')
 
-			writer = pd.ExcelWriter(output_dir + '/ISTDS.xlsx')
+		for compound in self.file_dfs:
+			self.file_dfs[compound].to_excel(writer, sheet_name=compound, index=False, engine=openpyxl)
 
-			for compound in self.file_dfs:
-				self.file_dfs[compound].to_excel(writer, sheet_name=compound, index=False, engine=openpyxl)
-
-			writer.save()
+		writer.save()
