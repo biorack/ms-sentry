@@ -1,0 +1,5 @@
+name,pos_mz,neg_mz,ideal_rt,intensity_threshold
+"13C,15N-Phenylalanine",176.1135,174.0989,9,1.00E+06
+ABMBA,229.9811,227.9665,5,2.00E+05
+"13C,15N-Tryptophan",218.1281,216.1136,10,5.00E+05
+"13C2,15N3-Cytosine",117.0484,115.0338,5,5.00E+05
