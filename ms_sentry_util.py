@@ -128,16 +128,47 @@ def get_file_age(path):
 
 	return mins_old
 
+def _get_file_polarity(name):
+	return name.split('_')[9]
+	
+
+def _get_file_msnumber(name):
+	return name.split('_')[10]
+
+
+def _get_file_category(name):
+	"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, MeOH) as string"""
+	filename_category_str = 'S1'
+	filename_category_fields_split = name.split('_')[12], name.split('_')[14] #Checks the sample group field (13) and the optional group field
+	filename_category_fields_join = '-'.join(filename_category_fields_split)
+	filename_category_ele = [ele for ele in filename_categories_vocab if (ele in filename_category_fields_join)]
+	
+	if filename_category_ele != []:
+		filename_category_str = filename_category_str.join(filename_category_ele)
+	
+	return filename_category_str
+
+
+def _get_file_run_number(name):
+	run_num_str = name.split('_')[15]
+	if not run_num_str.isnumeric():
+		run_num = int(re.sub('\\D', '', run_num_str)) #for JGI naming scheme (ex. Run4)
+	else:
+		run_num = int(run_num_str) #for EGSB naming scheme (ex. '100')
+
+	return run_num
 
 class RawDataset():
 
-	def set_file_paths(self, path, files_num = 0):
+	def set_file_paths(self, path, files_num=0, exclude_blanks=True, reverse_path_list=False):
 		"""
 		Set the list of raw file paths that will be analyzed. Remove any files from the list that are under 30 minutes old.
         
 		Arguments:
 		path -- path to experiment directory containing raw files
-		files_num -- number of most recent files to analyze. default is 0, which includes all files in directory.
+		files_num -- number of most recent files to analyze. default is 0, which will include all files in directory.
+		exclude_blanks--if True, blanks (MeOH) are excluded from list
+		reverse_path_list--reverses the file_path list
 		"""
 		file_paths = sorted(glob.iglob(path + '\\*.RAW'), key=os.path.getmtime)
         
@@ -150,42 +181,22 @@ class RawDataset():
 			files_include = 0
 		else:
 			files_include = file_paths_len - files_num
-        
+		
+		if exclude_blanks:
+			for path in file_paths:
+				name = os.path.basename(path)
+				if _get_file_category(name) == 'MeOH':
+					file_paths.remove(path)
+				
+		if reverse_path_list:
+			file_paths.reverse()
+
 		self.file_paths = file_paths[files_include:file_paths_len]
 
 	def set_file_names(self):
 		self.file_names = [os.path.basename(x) for x in self.file_paths]
 
-	@staticmethod
-	def _get_file_polarity(name):
-		return name.split('_')[9]
 	
-	@staticmethod
-	def _get_file_msnumber(name):
-		return name.split('_')[10]
-
-	@staticmethod
-	def _get_file_category(name):
-		"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, MeOH) as string"""
-		filename_category_str = 'S1'
-		filename_category_fields_split = name.split('_')[12], name.split('_')[14] #Checks the sample group field (13) and the optional group field
-		filename_category_fields_join = '-'.join(filename_category_fields_split)
-		filename_category_ele = [ele for ele in filename_categories_vocab if (ele in filename_category_fields_join)]
-		
-		if filename_category_ele != []:
-			filename_category_str = filename_category_str.join(filename_category_ele)
-		
-		return filename_category_str
-
-	@staticmethod
-	def _get_file_run_number(name):
-		run_num_str = name.split('_')[15]
-		if not run_num_str.isnumeric():
-			run_num = int(re.sub('\\D', '', run_num_str)) #for JGI naming scheme (ex. Run4)
-		else:
-			run_num = int(run_num_str) #for EGSB naming scheme (ex. '100')
-
-		return run_num
 
 	def check_centroid(self):
 		"""
@@ -227,7 +238,7 @@ class RawDataset():
 			
 			failure_report = []
 			underscore_num = name.count('_')
-			polarity = self._get_file_polarity(name)
+			polarity = _get_file_polarity(name)
 
 			if underscore_num != underscore_num_set:
 				underscore_res = False
@@ -247,7 +258,11 @@ class RawDataset():
 				
 		return report
 
-	def get_data(self, compounds, ppm_tolerance=10):
+	def get_data(self, compound_atlas, ppm_tolerance=10, filter_low_intensity=True):
+		"""
+		For each compound in atlas dataframe, extract mzs, RTs, and intensities for all files in list
+		and has the polarity descriptor in the correct location.
+		"""
 		
 		assign_close_method() #function that assigns a 'close' method to fisher-py's native RawFile class so .raw files can be closed after analysis
 		
@@ -270,10 +285,10 @@ class RawDataset():
 								'File Category', 'Compound Name', 'Polarity', 'Observed M/Z', 'PPM Error', 'RT',
 								'MS1 Intensity', 'MS2 Precursor Intensity'])
 
-		for c in compounds:
+		for idx, row in compound_atlas.iterrows():
 
 			istd_data = istd_data.copy()
-			istd = compounds[c]
+			istd = row.to_dict()
 			compound_name, mz_t_pos, mz_t_neg, rt_t, i_t = istd.values()
 			(run_numbers, file_names, file_categories, compound_names, pols, mzs, 
 			ppms, rts, ims1s, precursor_ims2s) = [], [], [], [], [], [], [], [], [], []
@@ -281,10 +296,10 @@ class RawDataset():
 			for f in self.file_paths:
 				file = RawFile(f)
 				file_name = os.path.basename(f)
-				file_polarity = self._get_file_polarity(file_name)
-				file_category = self._get_file_category(file_name)
-				file_msnumber = self._get_file_msnumber(file_name)
-				run_num = self._get_file_run_number(file_name)
+				file_polarity = _get_file_polarity(file_name)
+				file_category = _get_file_category(file_name)
+				file_msnumber = _get_file_msnumber(file_name)
+				run_num = _get_file_run_number(file_name)
 				include_ms2 = False
 				
 				if "MSMS" in file_msnumber:
@@ -299,9 +314,9 @@ class RawDataset():
 					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
 					neg_max_precursor_i = neg_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, pos, pos_mz_o, pos_ppmdif, pos_real_rt, 
+					istd_data_update(run_num, file_name, file_category, compound_name, pos, pos_mz_o, pos_ppmdif, pos_real_rt, 
 									pos_max_ms1_i, pos_max_precursor_i)
-					istd_data_update(run_num, file_name, file_category, c, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
 									neg_max_ms1_i, neg_max_precursor_i)
 
 				if file_polarity == 'POS':
@@ -310,7 +325,7 @@ class RawDataset():
 					pos, pos_mz_o, pos_ppmdif, pos_real_rt, pos_max_ms1_i = pos_data_ms1
 					pos_max_precursor_i = pos_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, pos, pos_mz_o, pos_ppmdif, pos_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, pos, pos_mz_o, pos_ppmdif, pos_real_rt,
 									pos_max_ms1_i, pos_max_precursor_i)
 
 				if file_polarity == 'NEG':
@@ -319,7 +334,7 @@ class RawDataset():
 					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
 					neg_max_precursor_i = neg_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
 									neg_max_ms1_i, neg_max_precursor_i)
 
 				istd_data['Run Number'] = run_numbers
@@ -336,7 +351,7 @@ class RawDataset():
 				file.close_raw_file()
 				del file
 
-			self.file_data[c] = istd_data
+			self.file_data[compound_name] = istd_data
 
 	def make_dfs_from_data(self):
 
@@ -348,7 +363,7 @@ class RawDataset():
 
 			self.file_dfs[key] = df
 
-	def make_qc_plots(self, path):
+	def make_qc_plots(self, path, include_s1_intensity=False):
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
@@ -360,7 +375,7 @@ class RawDataset():
 		for compound in self.file_dfs:
 			df = self.file_dfs[compound]
 
-			fig1 = make_figure(df, 'MS1 Intensity', False)
+			fig1 = make_figure(df, 'MS1 Intensity', include_s1_intensity)
 			fig2 = make_figure(df, 'PPM Error', True)
 			fig3 = make_figure(df, 'RT', True)
 
@@ -370,7 +385,7 @@ class RawDataset():
 
 		pdf.close()
 
-	def export_dfs(self,export_csv=False, path):
+	def export_dfs(self, path, export_csv=False,):
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
