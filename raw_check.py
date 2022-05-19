@@ -3,12 +3,8 @@ import os
 import sys
 import pandas as pd
 
-phe_params = {'Name' : '13C,15N-Phenylalanine', 'Positive M/Z' : 176.1135, 'Negative M/Z' : 174.0989, 'Ideal RT' : 9.00, 'Ideal Intensity' : 5000000} 
-ab_params = {'Name' : 'ABMBA', 'Positive M/Z' : 229.9811, 'Negative M/Z' : 227.9665, 'Ideal RT' : 5.00, 'Ideal Intensity' : 5000000}
-trp_params = {'Name' : '13C,15N-Tryptophan', 'Positive M/Z' : 218.1281, 'Negative M/Z' : 216.1136, 'Ideal RT' : 10.00, 'Ideal Intensity' : 5000000}
-cyt_params = {'Name' : '13C2,15N3-Cytosine', 'Positive M/Z' : 117.0484, 'Negative M/Z' : 115.0338, 'Ideal RT' : 5.00, 'Ideal Intensity' : 5000000}
-
-compounds = {phe_params['Name'] : phe_params, ab_params['Name'] : ab_params, trp_params['Name'] : trp_params, cyt_params['Name'] : cyt_params}
+hilic_istd_atlas_file = open(sys.path [0] + '\\atlases\\hilic_istd_atlas.csv')
+hilic_istd_atlas_df = pd.read_csv(hilic_istd_atlas_file)
 
 print('-------------------------------------------------------------------------------------')
 print('Please provide the path to the directory where the experiment .raw files are stored.')
@@ -132,13 +128,12 @@ if summary_result_centroid == False:
 
 print('-------------------------------------------------------------------------------------')
 print('Extracting data from .raw files. This can take a while...')
-exp1.get_data(compounds)
+exp1.get_data(hilic_istd_atlas_df)
 exp1.make_dfs_from_data()
 
 print('Exporting plots and tables')
 exp1.make_qc_plots(expdir)
-exp1.export_dfs('CSV', expdir)
-exp1.export_dfs('XLSX', expdir)
+exp1.export_dfs(expdir)
 
 print('-------------------------------------------------------------------------------------')
 print('Done!')

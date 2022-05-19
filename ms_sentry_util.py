@@ -19,6 +19,7 @@ import openpyxl
 
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
 filename_categories_vocab = ['ISTD', 'QC', 'MeOH'] #Words that will be searched for in filename to determine file category
+blank = filename_categories_vocab[2]
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
 
 def ppm_diff(observed, theoretical):
@@ -257,7 +258,11 @@ class RawDataset():
 				
 		return report
 
-	def get_data(self, compounds, ppm_tolerance=10, filter_low_intensity=True):
+	def get_data(self, compound_atlas, ppm_tolerance=15, filter_low_intensity=True):
+		"""
+		For each compound in atlas dataframe, extract mzs, RTs, and intensities for all files in list
+		and has the polarity descriptor in the correct location.
+		"""
 		
 		assign_close_method() #function that assigns a 'close' method to fisher-py's native RawFile class so .raw files can be closed after analysis
 		
@@ -280,10 +285,10 @@ class RawDataset():
 								'File Category', 'Compound Name', 'Polarity', 'Observed M/Z', 'PPM Error', 'RT',
 								'MS1 Intensity', 'MS2 Precursor Intensity'])
 
-		for c in compounds:
+		for idx, row in compound_atlas.iterrows():
 
 			istd_data = istd_data.copy()
-			istd = compounds[c]
+			istd = row.to_dict()
 			compound_name, mz_t_pos, mz_t_neg, rt_t, i_t = istd.values()
 			(run_numbers, file_names, file_categories, compound_names, pols, mzs, 
 			ppms, rts, ims1s, precursor_ims2s) = [], [], [], [], [], [], [], [], [], []
@@ -309,9 +314,9 @@ class RawDataset():
 					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
 					neg_max_precursor_i = neg_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, pos, pos_mz_o, pos_ppmdif, pos_real_rt, 
+					istd_data_update(run_num, file_name, file_category, compound_name, pos, pos_mz_o, pos_ppmdif, pos_real_rt, 
 									pos_max_ms1_i, pos_max_precursor_i)
-					istd_data_update(run_num, file_name, file_category, c, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
 									neg_max_ms1_i, neg_max_precursor_i)
 
 				if file_polarity == 'POS':
@@ -320,7 +325,7 @@ class RawDataset():
 					pos, pos_mz_o, pos_ppmdif, pos_real_rt, pos_max_ms1_i = pos_data_ms1
 					pos_max_precursor_i = pos_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, pos, pos_mz_o, pos_ppmdif, pos_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, pos, pos_mz_o, pos_ppmdif, pos_real_rt,
 									pos_max_ms1_i, pos_max_precursor_i)
 
 				if file_polarity == 'NEG':
@@ -329,7 +334,7 @@ class RawDataset():
 					neg, neg_mz_o, neg_ppmdif, neg_real_rt, neg_max_ms1_i = neg_data_ms1
 					neg_max_precursor_i = neg_data_ms2
 
-					istd_data_update(run_num, file_name, file_category, c, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
+					istd_data_update(run_num, file_name, file_category, compound_name, neg, neg_mz_o, neg_ppmdif, neg_real_rt,
 									neg_max_ms1_i, neg_max_precursor_i)
 
 				istd_data['Run Number'] = run_numbers
@@ -346,7 +351,7 @@ class RawDataset():
 				file.close_raw_file()
 				del file
 
-			self.file_data[c] = istd_data
+			self.file_data[compound_name] = istd_data
 
 	def make_dfs_from_data(self):
 
@@ -358,7 +363,8 @@ class RawDataset():
 
 			self.file_dfs[key] = df
 
-	def make_qc_plots(self, path, include_s1_intensity=False):
+	def make_qc_plots(self, path, include_s1_intensity=True):
+
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
@@ -380,23 +386,21 @@ class RawDataset():
 
 		pdf.close()
 
-	def export_dfs(self, extension: str, path):
+	def export_dfs(self, path, export_csv=False,):
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
 
 		output_dir = (path + '\\qc_output')
 
-		if extension == 'CSV':
+		if export_csv:
 
 			for compound in self.file_dfs:
 				self.file_dfs[compound].to_csv(output_dir + '/' + compound + '.csv', index=False)
 
-		if extension == 'XLSX':
+		writer = pd.ExcelWriter(output_dir + '/ISTDS.xlsx')
 
-			writer = pd.ExcelWriter(output_dir + '/ISTDS.xlsx')
+		for compound in self.file_dfs:
+			self.file_dfs[compound].to_excel(writer, sheet_name=compound, index=False, engine=openpyxl)
 
-			for compound in self.file_dfs:
-				self.file_dfs[compound].to_excel(writer, sheet_name=compound, index=False, engine=openpyxl)
-
-			writer.save()
+		writer.save()
