@@ -3,7 +3,7 @@ import os
 import sys
 import pandas as pd
 
-hilic_istd_atlas_file = open(sys.path [0] + '\\atlases\\hilic_istd_atlas.csv')
+hilic_istd_atlas_file = open(sys.path[0] + '\\atlases\\hilic_istd_atlas.csv')
 hilic_istd_atlas_df = pd.read_csv(hilic_istd_atlas_file)
 
 print('-------------------------------------------------------------------------------------')
