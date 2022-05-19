@@ -258,7 +258,7 @@ class RawDataset():
 				
 		return report
 
-	def get_data(self, compound_atlas, ppm_tolerance=10, filter_low_intensity=True):
+	def get_data(self, compound_atlas, ppm_tolerance=15, filter_low_intensity=True):
 		"""
 		For each compound in atlas dataframe, extract mzs, RTs, and intensities for all files in list
 		and has the polarity descriptor in the correct location.
@@ -363,7 +363,7 @@ class RawDataset():
 
 			self.file_dfs[key] = df
 
-	def make_qc_plots(self, path, include_s1_intensity=False):
+	def make_qc_plots(self, path, include_s1_intensity=True):
 
 		if not os.path.isdir(path + '\\qc_output'):
 			os.mkdir(path + '\\qc_output')
