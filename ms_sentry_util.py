@@ -18,8 +18,7 @@ import pandas as pd
 import openpyxl
 
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
-filename_categories_vocab = ['ISTD', 'QC', 'MeOH'] #Words that will be searched for in filename to determine file category
-blank = filename_categories_vocab[2]
+filename_categories_vocab = ['ISTD', 'QC', 'InjBL', 'InjBl'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
 
 def ppm_diff(observed, theoretical):
@@ -138,15 +137,22 @@ def _get_file_msnumber(name):
 
 def _get_file_category(name):
 	"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, MeOH) as string"""
+
 	filename_category_str = 'S1'
-	filename_category_fields_split = name.split('_')[12], name.split('_')[14] #Checks the sample group field (13) and the optional group field
-	filename_category_fields_join = '-'.join(filename_category_fields_split)
-	filename_category_ele = [ele for ele in filename_categories_vocab if (ele in filename_category_fields_join)]
+	group_field = name.split('_')[12]
+	optional_field = name.split('_')[14]
 	
-	if filename_category_ele != []:
-		filename_category_str = filename_category_str.join(filename_category_ele)
+	optional_category_ele = [ele for ele in filename_categories_vocab if (ele in optional_field)] #check for instances of controlled vocab in optional field
+	group_category_ele = [ele for ele in filename_categories_vocab if (ele in optional_field)] #check for instances in group field
 	
+	if optional_category_ele != []:
+		filename_category_str = filename_category_str.join(optional_category_ele) #assign category from optional field if controlled vocab is present.
+	
+	if group_category_ele != []:
+		filename_category_str = filename_category_str.join(group_category_ele)
+		
 	return filename_category_str
+	
 
 
 def _get_file_run_number(name):
@@ -185,7 +191,8 @@ class RawDataset():
 		if exclude_blanks:
 			for path in file_paths:
 				name = os.path.basename(path)
-				if _get_file_category(name) == 'MeOH':
+				file_category = _get_file_category(name)
+				if file_category == 'InjBL' or file_category == 'InjBl':
 					file_paths.remove(path)
 				
 		if reverse_path_list:
