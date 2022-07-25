@@ -136,14 +136,14 @@ def _get_file_msnumber(name):
 
 
 def _get_file_category(name):
-	"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, MeOH) as string"""
+	"""Take filename string as input, return the 'sample type' (S1, ISTD, QC, InjBl) as string"""
 
 	filename_category_str = 'S1'
 	group_field = name.split('_')[12]
 	optional_field = name.split('_')[14]
 	
 	optional_category_ele = [ele for ele in filename_categories_vocab if (ele in optional_field)] #check for instances of controlled vocab in optional field
-	group_category_ele = [ele for ele in filename_categories_vocab if (ele in optional_field)] #check for instances in group field
+	group_category_ele = [ele for ele in filename_categories_vocab if (ele in group_field)] #check for instances in group field
 	
 	if optional_category_ele != []:
 		filename_category_str = filename_category_str.join(optional_category_ele) #assign category from optional field if controlled vocab is present.
