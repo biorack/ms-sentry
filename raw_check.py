@@ -55,9 +55,16 @@ for name, result in name_conformation_report.items():
 
 	else:
 		summary_result_filenames = True
-
+		
+try:
+	summary_result_filenames
+except:
+	print('Empty set of filenames. Make sure data files are >30 minutes old and non-InjBl files were selected')
+	sys.exit('Exiting...')
+		
 if summary_result_filenames == True:
 	print('Filenames are conforming')
+	
 
 if summary_result_filenames == False: 
 

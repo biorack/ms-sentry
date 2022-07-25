@@ -182,19 +182,19 @@ class RawDataset():
 			file_paths.remove(file_paths[-1])
             
 		file_paths_len = len(file_paths)
-            
-		if files_num >= file_paths_len or files_num == 0:
-			files_include = 0
-		else:
-			files_include = file_paths_len - files_num
-		
+        
 		if exclude_blanks:
 			for path in file_paths:
 				name = os.path.basename(path)
 				file_category = _get_file_category(name)
 				if file_category == 'InjBL' or file_category == 'InjBl':
 					file_paths.remove(path)
-				
+			
+		if files_num >= file_paths_len or files_num == 0:
+			files_include = 0
+		else:
+			files_include = file_paths_len - files_num
+		
 		if reverse_path_list:
 			file_paths.reverse()
 
