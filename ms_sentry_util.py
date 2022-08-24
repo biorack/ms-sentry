@@ -20,6 +20,7 @@ import openpyxl
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
 filename_categories_vocab = ['ISTD', 'QC', 'InjBL', 'InjBl'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
+min_file_age = 30
 
 def ppm_diff(observed, theoretical):
 	"""Take two numbers as arguments, return PPM difference."""
@@ -178,7 +179,7 @@ class RawDataset():
 		"""
 		file_paths = sorted(glob.iglob(path + '\\*.RAW'), key=os.path.getmtime)
         
-		while get_file_age(file_paths[-1]) < 30:
+		while get_file_age(file_paths[-1]) < min_file_age:
 			file_paths.remove(file_paths[-1])
         
 		if exclude_blanks:
