@@ -17,6 +17,9 @@ import glob
 import pandas as pd
 import openpyxl
 
+from pathlib import Path
+import metatlas.metatlas.tools.validate_filenames as validate
+
 polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the filename. 
 filename_categories_vocab = ['ISTD', 'QC', 'InjBL', 'InjBl'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
@@ -238,31 +241,16 @@ class RawDataset():
 		
 		Returns: True if all files are conforming and False if any are not.
 		"""
-		report = {}
-		for name in self.file_names:
+		report = {'filename':{}, 'errors':{}, 'warnings':{}}
+		index = 0
+		for path in self.file_paths:
+	
+			errors, warnings = validate.get_validation_messages(Path(path), minimal=True)
 			
-			underscore_res = True
-			polarity_res = True
-			
-			failure_report = []
-			underscore_num = name.count('_')
-			polarity = _get_file_polarity(name)
-
-			if underscore_num != underscore_num_set:
-				underscore_res = False
-				underscore_fail = 'Incorrect Number of Underscores'
-				failure_report.append(underscore_fail) 
-				
-			if not [True for ele in polarities if (ele in polarity)]:
-				polarity_res = False
-				polarity_fail = 'Polarity Descriptor Invalid'
-				failure_report.append(polarity_fail)
-				
-				
-			if underscore_res == False or polarity_res == False:
-				report[name] = failure_report
-			else:
-				report[name] = ""
+			report['filename'][index] = path
+			report['errors'][index] = errors
+			report['warnings'][index] = warnings
+			index += 1
 				
 		return report
 
