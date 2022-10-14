@@ -5,10 +5,11 @@ import pandas as pd
 
 hilic_istd_atlas_file = open(sys.path[0] + '\\atlases\\hilic_istd_atlas.csv')
 hilic_istd_atlas_df = pd.read_csv(hilic_istd_atlas_file)
+filename_dir_error_patterns = ['(Filename and parent directory do not contain the same batch fields\.)', '(Parent directory contains .* fields but the minimum allowed is 9\.)'] #list of parent directory error patterns. Current JGI directory structure will allways produce parent directory errors. 
 
 print('-------------------------------------------------------------------------------------')
 print('Please provide the path to the directory where the experiment .raw files are stored.')
-print('Use Windows file-path format')
+print('Use Windows path format')
 
 while True:
 	raw_path = input('Path to Experiment Directory:')
@@ -43,16 +44,15 @@ exp1.set_file_names()
 print('-------------------------------------------------------------------------------------')
 print('Checking filenames and data collection mode (profile/centroid)...')
 
-name_conformation_report = exp1.check_file_names()
+name_conformation_report = exp1.check_file_names(error_patterns_to_ignore=filename_dir_error_patterns)
 file_centroid_report = exp1.check_centroid()
 
-for name, result in name_conformation_report.items():
-	if result != "":
+for errors in name_conformation_report['errors'].values():
+
+	if errors != []:
 		print('Non-conforming filenames have been detected')
-		print('Reason(s): ' + str(result))
 		summary_result_filenames = False
 		break
-
 	else:
 		summary_result_filenames = True
 		
@@ -65,7 +65,6 @@ except:
 if summary_result_filenames == True:
 	print('Filenames are conforming')
 	
-
 if summary_result_filenames == False: 
 
 	while True:
@@ -73,7 +72,7 @@ if summary_result_filenames == False:
 
 		if user_export == 'y':
 			print('Exporting...')
-			name_report = pd.DataFrame.from_dict(name_conformation_report, orient = 'index')
+			name_report = pd.DataFrame.from_dict(name_conformation_report)
 
 			if not os.path.isdir(expdir + '\\failure_report'):
 				os.mkdir(expdir + '\\failure_report')
@@ -117,6 +116,26 @@ if summary_result_centroid == True:
 	print('Data collected in centroid mode')
 
 if summary_result_centroid == False: 
+
+	while True:
+		user_export = input('Would you like to export failure report? (y/n):')
+
+		if user_export == 'y':
+			print('Exporting...')
+			name_report = pd.DataFrame.from_dict(file_centroid_report, orient = 'index')
+
+			if not os.path.isdir(expdir + '\\failure_report'):
+				os.mkdir(expdir + '\\failure_report')
+
+			name_report.to_csv(expdir + '\\failure_report\\centroid.csv')
+			break
+
+		if user_export == 'n':
+			break
+
+		else:
+			print('Input not recognized')
+			continue
 
 	while True:
 		user_continue = input('Would you like to continue with analysis? (y/n):')
