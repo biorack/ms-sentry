@@ -1,4 +1,4 @@
-# ms-sentry version 1.0.0
+# ms-sentry version 1.1.0
 
 This script is meant to be deployed on Thermo Fisher Orbitrap LC-MS instrument PCs to automate some basic data quality control.
 
