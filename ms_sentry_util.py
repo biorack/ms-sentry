@@ -24,7 +24,6 @@ polarities = ['FPS', 'POS', 'NEG'] #Acceptable polarity values present in the fi
 filename_categories_vocab = ['ISTD', 'QC', 'InjBL', 'InjBl'] #Words that will be searched for in filename to determine file category
 underscore_num_set = 15 #Number of underscores that should be in each filename so that untargeted jobs are able to process them after upload
 min_file_age = 30
-filename_dir_error_patterns = ['(Filename and parent directory do not contain the same batch fields\.)', '(Parent directory contains .* fields but the minimum allowed is 9\.)'] #list of parent directory error patterns. 
 
 def ppm_diff(observed, theoretical):
 	"""Take two numbers as arguments, return PPM difference."""
@@ -263,7 +262,7 @@ class RawDataset():
 
 		return(truncated_filtered_errors)
 
-	def check_file_names(self, ignore_filename_dir_errors=True):
+	def check_file_names(self, error_patterns_to_ignore=[]):
 		"""
 		Checks that each file name has the correct number of underscores
 		and has the polarity descriptor in the correct location.
@@ -276,8 +275,8 @@ class RawDataset():
 	
 			errors, warnings = validate.get_validation_messages(Path(path), minimal=True)
 			
-			if ignore_filename_dir_errors:
-				found_ignored_errors = search_filename_errors(errors, filename_dir_error_patterns)
+			if error_patterns_to_ignore!=[]:
+				found_ignored_errors = search_filename_errors(errors, error_patterns_to_ignore)
 				errors = remove_ignored_errors(errors, found_ignored_errors)
 
 			report['filename'][index] = path
