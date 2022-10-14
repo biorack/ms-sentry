@@ -168,6 +168,35 @@ def _get_file_run_number(name):
 
 	return run_num
 
+	
+def _search_filename_errors(errors, error_patterns):
+	"""
+	search list output from filename validation for error strings
+    
+	returns: list of errors that match the patterns specified
+	"""
+	found_errors = []
+	errors_re = '|'.join(errors)
+	patterns = [re.compile(s) for s in error_patterns]
+    
+	[found_errors.append(re.findall(p, errors_re)) for p in patterns]
+	found_errors = [''.join(e) for e in found_errors]
+	found_errors = list(filter(None, found_errors))
+    
+	return found_errors
+
+def _remove_ignored_errors(errors, ignored_errors):
+	"""
+	remove error strings from list of errors
+    
+	returns: list of errors without the errors specified, None types are removed from list
+	"""
+    
+	[errors.remove(e) for e in ignored_errors]
+	truncated_filtered_errors = list(filter(None, errors))
+
+	return(truncated_filtered_errors)
+
 class RawDataset():
 
 	def set_file_paths(self, path, files_num=0, exclude_blanks=True, reverse_path_list=False):
@@ -207,8 +236,6 @@ class RawDataset():
 	def set_file_names(self):
 		self.file_names = [os.path.basename(x) for x in self.file_paths]
 
-	
-
 	def check_centroid(self):
 		"""
 		Checks if the first scan of each file is centroid. 
@@ -234,34 +261,6 @@ class RawDataset():
 
 		return centroid_report
 
-	def search_filename_errors(errors, error_patterns):
-		"""
-		search list output from filename validation for error strings
-    
-		returns: list of errors that match the patterns specified
-		"""
-		found_errors = []
-		errors_re = '|'.join(errors)
-		patterns = [re.compile(s) for s in error_patterns]
-    
-		[found_errors.append(re.findall(p, errors_re)) for p in patterns]
-		found_errors = [''.join(e) for e in found_errors]
-		found_errors = list(filter(None, found_errors))
-    
-		return found_errors
-
-	def remove_ignored_errors(errors, ignored_errors):
-		"""
-		remove error strings from list of errors
-    	
-		returns: list of errors without the errors specified, None types are removed from list
-		"""
-    
-		[errors.remove(e) for e in ignored_errors]
-		truncated_filtered_errors = list(filter(None, errors))
-
-		return(truncated_filtered_errors)
-
 	def check_file_names(self, error_patterns_to_ignore=[]):
 		"""
 		Checks that each file name has the correct number of underscores
@@ -276,8 +275,8 @@ class RawDataset():
 			errors, warnings = validate.get_validation_messages(Path(path), minimal=True)
 			
 			if error_patterns_to_ignore!=[]:
-				found_ignored_errors = search_filename_errors(errors, error_patterns_to_ignore)
-				errors = remove_ignored_errors(errors, found_ignored_errors)
+				found_ignored_errors = _search_filename_errors(errors, error_patterns_to_ignore)
+				errors = _remove_ignored_errors(errors, found_ignored_errors)
 
 			report['filename'][index] = path
 			report['errors'][index] = errors
