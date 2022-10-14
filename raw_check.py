@@ -47,7 +47,7 @@ print('Checking filenames and data collection mode (profile/centroid)...')
 name_conformation_report = exp1.check_file_names(error_patterns_to_ignore=filename_dir_error_patterns)
 file_centroid_report = exp1.check_centroid()
 
-for errors in name_conformation_report['errors']:
+for errors in name_conformation_report['errors'].values():
 
 	if errors != []:
 		print('Non-conforming filenames have been detected')
