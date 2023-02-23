@@ -1,0 +1,8 @@
+compound_name,POS_mz,NEG_mz,ideal_rt,intensity_threshold,signal_check
+Phenylalanine,166.08625,164.0717,1.5,1.00E+06,TRUE
+"13C,15N-Phenylalanine",176.1135,174.0989,1.5,1.00E+06,FALSE
+ABMBA,229.9811,227.9665,4.75,1.00E+06,FALSE
+"13C,15N-Tryptophan",218.1281,216.1136,2.35,1.00E+06,FALSE
+Tryptophan,205.09715,203.0826,2.35,1.00E+06,TRUE
+15N-Inosine,273.07618,271.06163,1,1.00E+06,FALSE
+,,,,,
