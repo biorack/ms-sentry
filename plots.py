@@ -105,8 +105,20 @@ def _label_outliers(data_df, y_axis, median_value, ax):
     label points with run number outside of 50% or median value
     """
     for idx, row in data_df.iterrows():
-        if row[y_axis] > median_value * 1.50 or row[y_axis] < median_value * 0.5:
-            ax.text(row.run_num, row[y_axis], row.run_num)
+
+        if y_axis == 'observed_intensity':
+            if row[y_axis] > median_value * 10 or row[y_axis] < median_value * 0.1:
+                ax.text(row.run_num, row[y_axis], row.run_num)
+        if y_axis == 'ppm_error':
+            if row[y_axis] > median_value + 2 or row[y_axis] < median_value - 2:
+                ax.text(row.run_num, row[y_axis], row.run_num)
+        if y_axis == 'retention_time':
+            if row[y_axis] > median_value + 0.5 or row[y_axis] < median_value - 0.5:
+                ax.text(row.run_num, row[y_axis], row.run_num)
+
+        
+
+#'observed_intensity' 'ppm_error' 'retention_time'
 
 def _make_compound_ms1_figure(all_ms1_data, y_axis, compound_name, intensity_threshold=None, logy=False, label_outliers=True):
 
