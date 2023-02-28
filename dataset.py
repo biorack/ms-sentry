@@ -85,7 +85,11 @@ class RawDataset():
     def get_chromatography(self):
         test_file = self.files_to_analyze[0]
         test_name = os.path.basename(test_file)
-        return test_name.split('_')[7]
+        if 'c18' in test_name.split('_')[7].lower():
+            chromatography = 'c18'
+        if 'hilic' in test_name.split('_')[7].lower():
+            chromatography = 'hilic'
+        return chromatography
 
     def validate_experiment_filenames(self):
         filename_warnings = []
