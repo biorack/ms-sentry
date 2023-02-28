@@ -15,7 +15,7 @@ def _make_unlabeled_m1_compound_figure(all_ms1_data, y_axis, compound_name, logy
     if logy:
         ms1_data[y_axis] = np.log10(ms1_data[y_axis])
 
-    fig, axs = plt.subplots(2, sharex=True, sharey=True)
+    fig, axs = plt.subplots(2, sharex=True)
     title = compound_name
 
     pos_data = ms1_data.loc[ms1_data['polarity']=='POS']
@@ -69,7 +69,7 @@ def _make_m1_tic_figure(all_ms1_tic_data, group_name, logy=False):
     if logy:
         ms1_tic_data['ms1_tic']= ms1_tic_data['ms1_tic'].apply(lambda x: np.array([np.log10(x[0]), x[1]]))
 
-    fig, axs = plt.subplots(2, sharex=True, sharey=True)
+    fig, axs = plt.subplots(2, sharex=True)
     title = group_name
 
     pos_data = ms1_tic_data.loc[ms1_tic_data['polarity']=='POS']
@@ -128,7 +128,7 @@ def _make_compound_ms1_figure(all_ms1_data, y_axis, compound_name, intensity_thr
         ms1_data[y_axis] = np.log10(ms1_data[y_axis])
         intensity_threshold = np.log10(intensity_threshold)
 
-    fig, axs = plt.subplots(2, sharex=True, sharey=True)
+    fig, axs = plt.subplots(2, sharex=True)
     title = compound_name
 
     pos_data = ms1_data.loc[ms1_data['polarity']=='POS']
