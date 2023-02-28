@@ -27,7 +27,7 @@ def check_file_collection_method(file_path, sampling_number=10):
     max_scan = raw_file.run_header_ex.last_spectrum
 
     for i in range(sampling_number):
-        random_scan = randrange(max_scan)
+        random_scan = randrange(1, max_scan)
         centroid_results.append(_centroid_data_collection(raw_file, random_scan))
 
     if not all(centroid_results):
