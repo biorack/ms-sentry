@@ -205,8 +205,8 @@ def _make_compound_ms1_figure(all_ms1_data, y_axis, compound_name, intensity_thr
     axs[0].set_title('POS')
     axs[1].set_title('NEG')
 
-    axs[0].hlines(y=np.mean(np.nan_to_num(istd_pos_y)), xmin=pos_data['run_num'].min(), xmax=pos_data['run_num'].max(), color='blue', linestyle=(0, (1, 10)), label='ISTD Mean')
-    axs[1].hlines(y=np.mean(np.nan_to_num(istd_neg_y)), xmin=neg_data['run_num'].min(), xmax=neg_data['run_num'].max(), color='blue', linestyle=(0, (1, 10)), label='ISTD Mean')
+    axs[0].hlines(y=np.mean(np.nan_to_num(istd_pos_y)), xmin=pos_data['run_num'].min(), xmax=pos_data['run_num'].max(), color='blue', linestyle='dashed', label='ISTD Mean')
+    axs[1].hlines(y=np.mean(np.nan_to_num(istd_neg_y)), xmin=neg_data['run_num'].min(), xmax=neg_data['run_num'].max(), color='blue', linestyle='dashed', label='ISTD Mean')
 
     if intensity_threshold is not None:
         intensity_threshold = [intensity_threshold for i in range(len(ms1_data.run_num))]
