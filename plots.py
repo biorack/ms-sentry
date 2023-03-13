@@ -110,10 +110,10 @@ def _label_outliers(data_df, y_axis, median_value, ax):
             if row[y_axis] > median_value * 10 or row[y_axis] < median_value * 0.1:
                 ax.text(row.run_num, row[y_axis], row.run_num)
         if y_axis == 'ppm_error':
-            if row[y_axis] > median_value + 2 or row[y_axis] < median_value - 2:
+            if row[y_axis] > median_value + 1.75 or row[y_axis] < median_value - 2:
                 ax.text(row.run_num, row[y_axis], row.run_num)
         if y_axis == 'retention_time':
-            if row[y_axis] > median_value + 0.5 or row[y_axis] < median_value - 0.5:
+            if row[y_axis] > median_value + 0.2 or row[y_axis] < median_value - 0.5:
                 ax.text(row.run_num, row[y_axis], row.run_num)
 
         
