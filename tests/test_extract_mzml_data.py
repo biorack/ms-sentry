@@ -2,7 +2,7 @@ import pymzml
 import numpy as np 
 import os
 from utils import find_nearest
-from extract_mzml_data import _extract_ms1_data, _get_ms1_eic
+from extract_mzml_data import _extract_ms1_data, _get_ms1_eic, _get_peak_data, _extract_ms1_tic
 import pytest
 # test for _extract_ms1_data
 
@@ -67,32 +67,37 @@ def test_eic_return_value_equals_real_value(request):
     assert np.allclose(test_vals2, real_vals2, atol=1e-6)
     assert np.allclose(test_vals3, real_vals3, atol=1e-6)
 
-    '''
-def test_eic_no_negatives(request):
+#Test _get_ms1_peak_data
+
+def test_get_ms1_peak_data_real_vals(request):
 
     rootdir = request.config.rootdir
    
-    ms1_data = _extract_ms1_data("./tests/test_data/20210929_JGI-AK-TH_DS_503916_WRFungi_final_QE-HF_C18_USDAY63680_FPS_MS1_31-P_CsAWO-pellet_3_Rg80to1200-CE102040-Csubverm-QC-C18QU_Run248.mzML")
+    real_vals1 = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_peak0.npz"))["arr_0"]
+    real_vals2 = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_peak1.npz"))["arr_0"]
+    real_vals3 = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_peak2.npz"))["arr_0"]
 
-    ms1_rts = np.load(os.path.join(rootdir, "tests/test_data/test_file_rts.npy"))
-    ms1_is = np.load(os.path.join(rootdir, "tests/test_data/test_file_is.npy"))
-    ms1_mzs = np.load(os.path.join(rootdir, "tests/test_data/test_file_mzs.npy"))
+    test_ms1_peak = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_eic.npz"))["arr_0"]
 
-    assert (ms1_rts >= 0).all()
-    assert (ms1_is >= 0).all()
-    assert (ms1_mzs >= 0).all()
+    test_vals1, test_vals2, test_vals3 = _get_peak_data(test_ms1_peak)
+    
+    assert np.allclose(test_vals1, real_vals1, atol=1e-6)
+    assert np.allclose(test_vals2, real_vals2, atol=1e-6)
+    assert np.allclose(test_vals3, real_vals3, atol=1e-6)
 
-def test_eic_same_size(request):
+#Test _extract_ms1_tic
+    
+def test_extract_ms1_tic_real_vals(request):
+
     rootdir = request.config.rootdir
    
-    ms1_data = _extract_ms1_data("./tests/test_data/20210929_JGI-AK-TH_DS_503916_WRFungi_final_QE-HF_C18_USDAY63680_FPS_MS1_31-P_CsAWO-pellet_3_Rg80to1200-CE102040-Csubverm-QC-C18QU_Run248.mzML")
+    real_vals1 = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_tic0.npz"))["arr_0"]
+    real_vals2 = np.load(os.path.join(rootdir, "tests/test_data/test_file_ms1_tic1.npz"))["arr_0"]
+  
 
-    ms1_rts = np.load(os.path.join(rootdir, "tests/test_data/test_file_rts.npy"))
-    ms1_is = np.load(os.path.join(rootdir, "tests/test_data/test_file_is.npy"))
-    ms1_mzs = np.load(os.path.join(rootdir, "tests/test_data/test_file_mzs.npy"))
+    test_file_path = os.path.join(rootdir, "tests/test_data/20210929_JGI-AK-TH_DS_503916_WRFungi_final_QE-HF_C18_USDAY63680_FPS_MS1_31-P_CsAWO-pellet_3_Rg80to1200-CE102040-Csubverm-QC-C18QU_Run248.mzML")
 
-    tolerance = 1e-6
-    #how do i adjust the tolerance
-    assert np.all(np.abs(np.diff(ms1_rts)) <= tolerance)
-    assert np.all(np.abs(np.diff(ms1_is)) <= tolerance)
-    assert np.all(np.abs(np.diff(ms1_mzs)) <= tolerance)'''
+    test_vals1, test_vals2, = _extract_ms1_tic(test_file_path)
+    
+    assert np.allclose(test_vals1, real_vals1, atol=1e-6)
+    assert np.allclose(test_vals2, real_vals2, atol=1e-6)

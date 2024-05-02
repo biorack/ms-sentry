@@ -19,10 +19,13 @@ def _centroid_data_collection(raw_file, scan_number):
         return False
 
 def check_file_collection_method(file_path, sampling_number=10):
-    
-    raw_file = RawFileReaderAdapter.file_factory(file_path) 
-    raw_file.select_instrument(Device.MS, 1)
-    
+    try: 
+        raw_file = RawFileReaderAdapter.file_factory(file_path)
+        raw_file.select_instrument(Device.MS, 1)
+    except:
+        message = "Corrupted file detected, {}".format(file_path)
+        raise Exception(message)
+
     centroid_results = []
     max_scan = raw_file.run_header_ex.last_spectrum
 
