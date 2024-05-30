@@ -118,11 +118,21 @@ def test_close_data_storage(request):
     assert not os.path.exists(os.path.join(rootdir, 'data_store/ms1_tic_data.csv'))
     assert not os.path.exists(os.path.join(rootdir, 'data_store/ms2_peak_data.csv'))
 
-'''#Test _collect_ms1_peak_data
+#Test _collect_ms1_peak_data work in progress
     
-# Sample data for testing
+'''# Sample data for testing
 sample_file = ...  # Define your sample file object
 sample_atlas_df = ...  # Define your sample atlas DataFrame
+def test__collect_ms1_peak_data()
+    
+    @pytest.fixture
+    def _get_ms1_eic()
+        return "tests/test_data/test_file_ms1_eic.npz"
+    
+    @pytest.fixture
+    def _get_peak_data()
+        test_peak = "tests/test_data/test_file_ms1_peak0.npz" + "tests/test_data/test_file_ms1_peak1.npz" + "tests/test_data/test_file_ms1_peak2.npz"
+        return test_peak
 
 # Test peak data extraction
 def test_peak_data_extraction():
