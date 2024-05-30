@@ -135,3 +135,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+ThermoRawFileParser1.4.1.zip
+
+# note books
+*.ipynb
